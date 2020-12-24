@@ -33,9 +33,8 @@ python main.py --config configs/vgg_ssd300_voc0712.yaml
 *`log.txt` file is attached for your reference*
 
 ## Evaluate
-For evaluating the trained model
+For evaluating the trained model. Model weights can be downloaded via this [link](https://www.dropbox.com/s/6femfgitaguktqq/model_weights.h5?dl=0)
 
-*Please download the [CKPT file](https://www.dropbox.com/s/6femfgitaguktqq/model_weights.h5?dl=0)*
 ```
 python main.py --config configs/vgg_ssd300_voc0712.yaml --test True CKPT 'model_weights.h5'
 ```
