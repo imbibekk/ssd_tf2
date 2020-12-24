@@ -18,30 +18,17 @@ def hard_negative_mining(loss, labels, neg_pos_ratio):
     pos_mask = labels > 0
     num_pos = tf.reduce_sum(tf.dtypes.cast(pos_mask, tf.int32), axis=1, keepdims=True) #pos_mask.long().sum(dim=1, keepdim=True)
     num_neg = num_pos * neg_pos_ratio
-
-    #print('loss', loss.shape, 'pos_mask', pos_mask.shape)
-    #loss[pos_mask] = -math.inf
+    
     loss = loss.numpy()
     loss[pos_mask.numpy()] = -math.inf #-1e6
     loss = tf.convert_to_tensor(loss)
 
-    #loss = tf.tensor_scatter_nd_update(
-    #    loss,
-    #    pos_mask,
-    #    tf.range(best_default_idx.shape[0], dtype=tf.int64))
-
-    #loss[pos_mask.numpy()] = -100000000000
-    #_, indexes = loss.sort(dim=1, descending=True)
-    #_, orders = indexes.sort(dim=1)
-    #neg_mask = orders < num_neg
     rank = tf.argsort(loss, axis=1, direction='DESCENDING')
     rank = tf.argsort(rank, axis=1)
     
     neg_mask = rank < num_neg #tf.expand_dims(num_neg, 1)
-    #print(pos_mask.shape, neg_mask.shape, rank.shape)
     return tf.math.logical_or(pos_mask, neg_mask)
-    #return pos_mask | neg_mask
-
+  
 
 def corner_form_to_center_form(boxes):
     """ Transform boxes of format (xmin, ymin, xmax, ymax)
@@ -138,7 +125,6 @@ def iou_of(boxes0, boxes1, eps=1e-5):
     
 
 def convert_boxes_to_locations(center_form_boxes, center_form_priors, center_variance, size_variance):
-    #print('center_form_boxes: ', center_form_boxes.shape, 'center_form_priors', center_form_priors.shape)
     # priors can have one dimension less
     return tf.concat([
         (center_form_boxes[..., :2] - center_form_priors[..., :2]) / (center_form_priors[..., 2:] * center_variance),
@@ -165,39 +151,6 @@ def convert_locations_to_boxes(locations, priors, center_variance, size_variance
         ], axis=-1)
     
 
-
-'''
-def assign_priors(gt_boxes, gt_labels, corner_form_priors,
-                  iou_threshold):
-    """Assign ground truth boxes and targets to priors.
-    Args:
-        gt_boxes (num_targets, 4): ground truth boxes.
-        gt_labels (num_targets): labels of targets.
-        priors (num_priors, 4): corner form priors
-    Returns:
-        boxes (num_priors, 4): real values for priors.
-        labels (num_priros): labels for priors.
-    """
-    # size: num_priors x num_targets
-    ious = iou_of(gt_boxes.unsqueeze(0), corner_form_priors.unsqueeze(1))
-    # size: num_priors
-    best_target_per_prior, best_target_per_prior_index = ious.max(1)
-    # size: num_targets
-    best_prior_per_target, best_prior_per_target_index = ious.max(0)
-
-    for target_index, prior_index in enumerate(best_prior_per_target_index):
-        best_target_per_prior_index[prior_index] = target_index
-    # 2.0 is used to make sure every target has a prior assigned
-    best_target_per_prior.index_fill_(0, best_prior_per_target_index, 2)
-    # size: num_priors
-    labels = gt_labels[best_target_per_prior_index]
-    labels[best_target_per_prior < iou_threshold] = 0  # the backgournd id
-    boxes = gt_boxes[best_target_per_prior_index]
-    return boxes, labels
-'''
-
-
-
 def assign_priors(gt_boxes, gt_labels, corner_form_priors, iou_threshold=0.5):
     """Assign ground truth boxes and targets to priors.
     Args:
@@ -208,38 +161,8 @@ def assign_priors(gt_boxes, gt_labels, corner_form_priors, iou_threshold=0.5):
         boxes (num_priors, 4): real values for priors.
         labels (num_priros): labels for priors.
     """
-    # Convert default boxes to format (xmin, ymin, xmax, ymax)
-    # in order to compute overlap with gt boxes
-    #transformed_default_boxes = transform_center_to_corner(default_boxes)
-    
-    #print(gt_boxes.shape, gt_labels.shape, corner_form_priors.shape)  # (3, 4) (3,) (8732, 4)
     iou = compute_iou(corner_form_priors, gt_boxes)
-    '''
-    # size: num_priors
-    best_target_per_prior = tf.math.reduce_max(iou, 1)
-    best_target_per_prior_index = tf.math.argmax(iou, 1)
-    # size: num_targets
-    best_prior_per_target = tf.math.reduce_max(iou, 0)
-    best_prior_per_target_index = tf.math.argmax(iou, 0)
-
-    best_prior_per_target_index = tf.tensor_scatter_nd_update(
-        best_prior_per_target_index,
-        tf.expand_dims(best_prior_per_target_index, 1),
-        tf.range(best_prior_per_target_index.shape[0], dtype=tf.int64))
-
-    best_target_per_prior = tf.tensor_scatter_nd_update(
-        best_target_per_prior,
-        tf.expand_dims(best_prior_per_target_index, 1),
-        tf.ones_like(best_prior_per_target_index, dtype=tf.float32))
-
-    labels = tf.gather(gt_labels, best_target_per_prior_index)
     
-    boxes = tf.gather(gt_boxes, best_target_per_prior_index)
-    labels = tf.where(
-        tf.less(best_target_per_prior, iou_threshold),
-        tf.zeros_like(labels),
-        labels)
-    '''
     best_gt_iou = tf.math.reduce_max(iou, 1)
     best_gt_idx = tf.math.argmax(iou, 1)
 
@@ -256,7 +179,6 @@ def assign_priors(gt_boxes, gt_labels, corner_form_priors, iou_threshold=0.5):
         tf.expand_dims(best_default_idx, 1),
         tf.ones_like(best_default_idx, dtype=tf.float32))
 
-    #print(gt_labels.shape, best_gt_idx.shape)
     gt_confs = tf.gather(gt_labels, best_gt_idx)
     gt_confs = tf.where(
         tf.less(best_gt_iou, iou_threshold),
