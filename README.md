@@ -36,7 +36,7 @@ python main.py --config configs/vgg_ssd300_voc0712.yaml
 For evaluating the trained model. Model weights can be downloaded via this [link](https://www.dropbox.com/s/6femfgitaguktqq/model_weights.h5?dl=0)
 
 ```
-python main.py --config configs/vgg_ssd300_voc0712.yaml --test True CKPT 'model_weights.h5'
+python main.py --config configs/vgg_ssd300_voc0712.yaml --test True CKPT model_weights.h5
 ```
 ```
 AP_aeroplane : 0.835755892121836
