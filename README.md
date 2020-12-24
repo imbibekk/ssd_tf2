@@ -30,12 +30,14 @@ Training can be done by using the config file in `configs` folder.
 ```
 python main.py --config configs/vgg_ssd300_voc0712.yaml
 ```
-*`log.txt` file is attached for your reference
+*`log.txt` file is attached for your reference*
 
 ## Evaluate
 For evaluating the trained model
+
+*Please download the [CKPT file](https://www.dropbox.com/s/6femfgitaguktqq/model_weights.h5?dl=0)*
 ```
-python main.py --config configs/vgg_ssd300_voc0712.yaml --test True CKPT './LOGS/model_weights.h5'
+python main.py --config configs/vgg_ssd300_voc0712.yaml --test True CKPT 'model_weights.h5'
 ```
 ```
 AP_aeroplane : 0.835755892121836
