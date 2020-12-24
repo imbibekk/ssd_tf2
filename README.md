@@ -30,7 +30,7 @@ Training can be done by using the config file in `configs` folder.
 ```
 python main.py --config configs/vgg_ssd300_voc0712.yaml
 ```
-* `log.txt` file is attached for your reference
+*`log.txt` file is attached for your reference
 
 ## Evaluate
 For evaluating the trained model
