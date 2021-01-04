@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 # SSD-tf2.0
 tf2.0 Implementation of SSD
 
@@ -61,7 +63,3 @@ AP_train : 0.8623668124696708
 AP_tvmonitor : 0.7666016840177408
 mAP : 0.7765613595751042
 ```
-
-## License
-
-This project is released under the [Apache 2.0 license](LICENSE).
