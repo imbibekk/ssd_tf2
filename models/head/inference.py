@@ -1,7 +1,6 @@
 import tensorflow as tf
 from utils.nms import batched_nms
 from utils.container import Container
-import torch
 
 
 class PostProcessor:
